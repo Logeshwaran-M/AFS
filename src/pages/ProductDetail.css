@@ -1,0 +1,54 @@
+/* WRAPPER */
+.carousel-wrapper {
+  position: relative;
+}
+
+/* TRACK */
+.carousel-track {
+  display: flex;
+  gap: 20px;
+  overflow: hidden;
+  scroll-behavior: smooth;
+}
+
+/* CARD */
+.carousel-card {
+  min-width: 220px;
+  flex: 0 0 auto;
+  transition: 0.3s;
+}
+
+.carousel-card:hover {
+  transform: translateY(-6px);
+}
+
+/* ARROW BUTTONS */
+.carousel-btn {
+  position: absolute;
+  top: 40%;
+  transform: translateY(-50%);
+  background: white;
+  border: none;
+  font-size: 30px;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+  cursor: pointer;
+  z-index: 10;
+  transition: 0.3s;
+}
+
+.carousel-btn:hover {
+  background: black;
+  color: white;
+}
+
+/* POSITION */
+.carousel-btn.left {
+  left: -10px;
+}
+
+.carousel-btn.right {
+  right: -10px;
+}
