@@ -52,7 +52,7 @@ function App() {
 
   <Route path="/desk-nameplates" element={<DeskNamePlates />} />
   <Route path="/house-nameplates" element={<HouseNamePlates />} />
-  <Route path="/wallpapers" element={<Wallpapers />} />
+
 
   <Route path="/product/:id" element={<ProductDetail />} />
  <Route path="/review" element={<Reviews />} />       // ✅ All reviews

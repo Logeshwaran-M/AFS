@@ -6,20 +6,20 @@ const Features = () => {
     {
       title: "13+ Years of Mastery",
       desc: "Since 2011, we've crafted over 150,000+ nameplates, mastering the perfect blend of durability and art.",
-      icon: <Award size={40} className="text-primary" />,
-      bgColor: "bg-primary-subtle"
+      icon: "/diamond.avif",
+ 
     },
     {
       title: "Exclusive Designs",
       desc: "Collaborating with renowned designers to launch collections that don't just look great—they start conversations.",
-      icon: <Palette size={40} className="text-danger" />,
-      bgColor: "bg-danger-subtle"
+      icon:  "/shop.avif",
+   
     },
     {
       title: "100% Love-It Guarantee",
       desc: "Satisfaction isn't just a goal; it's our standard. If you don't love it, we'll make it right—guaranteed.",
-      icon: <ShieldCheck size={40} className="text-success" />,
-      bgColor: "bg-success-subtle"
+      icon: "/guarantee.avif",
+     
     }
   ];
 
@@ -40,7 +40,7 @@ const Features = () => {
                 {/* Icon Container - Perfectly Aligned */}
                 <div className={`mx-auto mb-4 d-flex align-items-center justify-content-center rounded-4 ${item.bgColor}`} 
                      style={{ width: '80px', height: '80px' }}>
-                  {item.icon}
+                <img src= {item.icon}/>
                 </div>
                 
                 <div className="card-body p-0">

@@ -44,26 +44,31 @@ const ProductCard = ({ product }) => {
           {isWishlist ? <FaHeart /> : <FaRegHeart />}
         </button>
 
-        <img src={product.images[0]} alt={product.name} className="main-img" />
+      <div className="image-wrapper">
+  <img 
+    src={product.images[0]} 
+    alt={product.name} 
+    className="img primary-img" 
+  />
+  
+  {product.images[1] && (
+    <img 
+      src={product.images[1]} 
+      alt={product.name} 
+      className="img secondary-img" 
+    />
+  )}
+</div>
 
         {/* Hover Overlay Actions */}
         <AnimatePresence>
-          {isHovered && (
-            <motion.div 
-              className="hover-actions"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-            >
-              <button className="quick-add" onClick={(e) => { e.stopPropagation(); addToCart(product); toast.success('Added to Cart'); }}>
-                <FaShoppingCart /> Quick Add
-              </button>
-            </motion.div>
-          )}
+           <span className="position-absolute top-0 start-0 m-2 badge rounded-pill bg-dark px-2 py-1 z-3 opacity-75 x-small">
+                    Popular
+                  </span>
         </AnimatePresence>
       </div>
 
-      <div className="card">
+      <div className="card p-3">
         <h3 className="product-title">{product.name}</h3>
         
         <div className="rating-row">

@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { FaSearch } from "react-icons/fa";
+import { Navigate } from 'react-router-dom';
+
 import { 
   FaShoppingBag, FaBars, FaTimes, FaUser, FaSignInAlt, 
   FaUserPlus, FaClipboardList, FaHeart, FaSignOutAlt, FaChevronDown 
@@ -10,9 +12,14 @@ import { useWishlist } from '../context/WishlistContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFirebase } from '../context/FirebaseContext';
 import toast from 'react-hot-toast';
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase/config";
 import './Header.css';
 
+
 const Header = () => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 992);
+  
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [deskOpen, setDeskOpen] = useState(false);
@@ -21,8 +28,10 @@ const Header = () => {
      const [afsopen, setafsopen] = useState(false);
      const [searchOpen, setSearchOpen] = useState(false);
 const [searchTerm, setSearchTerm] = useState("");
+const [suggestions, setSuggestions] = useState([]);
+const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate();
+  
   const { getCartCount } = useCart();
   const { getWishlistCount } = useWishlist();
   const { user, logout } = useFirebase();
@@ -41,6 +50,16 @@ const [searchTerm, setSearchTerm] = useState("");
     }
   };
 
+
+  const navigate=useNavigate()
+
+  // Update view on resize
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 992);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const handleNavigation = (path) => {
     setDeskOpen(false);
     setHouseOpen(false);
@@ -49,11 +68,45 @@ const [searchTerm, setSearchTerm] = useState("");
     navigate(path);
   };
 
+  const fetchSuggestions = async (value) => {
+  setSearchTerm(value);
+
+  if (value.trim() === "") {
+    setSuggestions([]);
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const querySnapshot = await getDocs(collection(db, "products"));
+
+    const results = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+
+      // 🔍 match name (you can change field)
+      if (
+        data.name?.toLowerCase().includes(value.toLowerCase())
+      ) {
+        results.push({ id: doc.id, ...data });
+      }
+    });
+
+    setSuggestions(results.slice(0, 6)); // limit results
+  } catch (error) {
+    console.log(error);
+  }
+
+  setLoading(false);
+};
+
   return (
     <>
     <header className="main-header">
-      <div className="header-container">
-        
+    
+         <div className="header-container"> 
         {/* LOGO */}
         <div className="logo-section">
           <Link to="/" onClick={() => setMenuOpen(false)}>
@@ -62,7 +115,7 @@ const [searchTerm, setSearchTerm] = useState("");
         </div>
 
         {/* NAVIGATION */}
-        <nav className={`nav-links ${menuOpen ? 'mobile-active' : ''}`}>
+        <nav className={`nav-links mx-5 ${menuOpen ? 'mobile-active' : ''}`}>
           <NavLink to="/" className="nav-item">Home</NavLink>
           
           {/* DESK DROPDOWN */}
@@ -83,12 +136,19 @@ const [searchTerm, setSearchTerm] = useState("");
                   className="mega-menu"
                 >
                   <div className="mega-menu-content">
+                     <div className="menu-column">
+                     <h6>All Collections</h6>
+                      <div className="menu-item-row" onClick={() => handleNavigation('/Desk')}>All Name Plates</div>
+                      </div>
                     <div className="menu-column">
                       <h6>Browse By Profession</h6>
-                      <div className="menu-item-row" onClick={() => handleNavigation('/desk/doctors')}>Doctors & Dentists</div>
-                      <div className="menu-item-row" onClick={() => handleNavigation('/desk/lawyers')}>Lawyers & Judges</div>
-                      <div className="menu-item-row" onClick={() => handleNavigation('/desk/teachers')}>Teachers</div>
-                      <div className="menu-item-row" onClick={() => handleNavigation('/desk/police')}>Police Officers</div>
+                      <div className="menu-item-row" onClick={() => handleNavigation('/Desk/doctors')}>Doctors & Dentists</div>
+                      <div className="menu-item-row" onClick={() => handleNavigation('/Desk/advocates')}>Lawyers & Judges</div>
+                      <div className="menu-item-row" onClick={() => handleNavigation('/Desk/teachers')}>Teachers</div>
+                      <div className="menu-item-row" onClick={() => handleNavigation('/Desk/police')}>Police Officers</div>
+                        <div className="menu-item-row" onClick={() => handleNavigation('/Desk/ca')}>CA, CFA, CMA & CS</div>
+                        <div className="menu-item-row" onClick={() => handleNavigation('/Desk/armed')}>Armed Forces</div>
+                      
                     </div>
                   </div>
                 </motion.div>
@@ -115,11 +175,17 @@ const [searchTerm, setSearchTerm] = useState("");
                 >
                   <div className="mega-menu-content">
                     <div className="menu-column">
+                      <h6>All Collections</h6>
+                      <div className="menu-item-row" onClick={() => handleNavigation('/House')}>All House Plates</div>
+                    </div>
+                    <div className="menu-column">
                       <h6>Styles & Features</h6>
-                      <div className="menu-item-row" onClick={() => handleNavigation('/house/cutout')}>Cutout Plates</div>
-                      <div className="menu-item-row" onClick={() => handleNavigation('/house/led')}>LED Name Plates</div>
-                      <div className="menu-item-row" onClick={() => handleNavigation('/house/hanging')}>Hanging Plates</div>
-                      <div className="menu-item-row" onClick={() => handleNavigation('/house/photo')}>Photo Plates</div>
+                      <div className="menu-item-row" onClick={() => handleNavigation('/House/cutout')}>Cutout Name Plates</div>
+                      <div className="menu-item-row" onClick={() => handleNavigation('/House/led')}>LED Name Plates</div>
+                      <div className="menu-item-row" onClick={() => handleNavigation('/House/hanging')}>Hanging Name Plates</div>
+                         <div className="menu-item-row" onClick={() => handleNavigation('/House/numberplates')}>Number Sign Plates</div>
+                      <div className="menu-item-row" onClick={() => handleNavigation('/House/photo')}>Photo Name Plates</div>
+                       <div className="menu-item-row" onClick={() => handleNavigation('/House/planter')}>Planter Name Plates</div>
                     </div>
                   </div>
                 </motion.div>
@@ -127,7 +193,7 @@ const [searchTerm, setSearchTerm] = useState("");
             </AnimatePresence>
           </div>
 
-          <NavLink to="/wallpapers" className="nav-item">Wallpapers</NavLink>
+           <div className="menu-column" style={{cursor:"pointer"}} onClick={() => handleNavigation('/Wallpapers')}>Wallpapers</div>
             <div 
             className="nav-item dropdown-trigger" 
             onMouseEnter={() => setOthersopen(true)} 
@@ -148,9 +214,9 @@ const [searchTerm, setSearchTerm] = useState("");
                     <div className="menu-column">
                    
                       <div className="menu-item-row" onClick={() => handleNavigation('/Others/gst')}>Gst Name boards</div>
-                      <div className="menu-item-row" onClick={() => handleNavigation('/house/lawyers')}>Kids Room Signs</div>
-                      <div className="menu-item-row" onClick={() => handleNavigation('/house/teachers')}>Signages</div>
-                      <div className="menu-item-row" onClick={() => handleNavigation('/house/police')}>Clocks</div>
+                      <div className="menu-item-row" onClick={() => handleNavigation('/Others/kids')}>Kids Room Signs</div>
+                      <div className="menu-item-row" onClick={() => handleNavigation('/Others/signages')}>Signages</div>
+                      <div className="menu-item-row" onClick={() => handleNavigation('/Others/clocks')}>Clocks</div>
                     </div>
                   </div>
                 </motion.div>
@@ -189,35 +255,29 @@ const [searchTerm, setSearchTerm] = useState("");
           </div>
         </nav>
 {/* 🔍 SEARCH */}
-<div className="search-box">
 
-  <div 
-    className="search-icon"
-    onClick={() => setSearchOpen(!searchOpen)}
-  >
-    <FaSearch />
-  </div>
 
-  {searchOpen && (
-    <input
-      type="text"
-      placeholder="Search products..."
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      className="search-input"
-    />
-  )}
 
-</div>
+
         {/* ACTIONS */}
         <div className="header-actions">
+           
+              {/* 🔍 SEARCH ICON */}
+           <button 
+  className="btn-search"
+  onClick={() => setSearchOpen(prev => !prev)}
+>
+  <FaSearch />
+</button>
+ 
           <div 
             className="account-wrapper" 
             onMouseEnter={() => setDropdownOpen(true)} 
             onMouseLeave={() => setDropdownOpen(false)}
           >
-            <button className="btn-account">
-              <FaUser /> <span>Account</span>
+        
+            <button className="btn-account ">
+              <FaUser /> 
             </button>
             <AnimatePresence>
               {dropdownOpen && (
@@ -246,30 +306,77 @@ const [searchTerm, setSearchTerm] = useState("");
           </div>
 
 
-    <Link to="/cart" className="cart-btn">
-  <div className="cart-icon-wrapper">
-    <FaShoppingBag />
-    {cartCount > 0 && <span className="badge-count">{cartCount}</span>}
+  
+  <div className="cart-icon-wrapper ">
+    <FaShoppingBag className='' onClick={()=>navigate("/cart")}/>
+    {cartCount > 0 && <span className="badge-count ">{cartCount}</span>}
   </div>
-</Link>
 
+
+         {isMobile && (
           <div className="mobile-toggle" onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen ? <FaTimes /> : <FaBars />}
           </div>
+        )}
         </div>
-      </div>
+     </div>
+   
     </header>
-   {searchOpen && (
-  <div className="search-bar-full">
-    <input
-      type="text"
-      placeholder="Search products..."
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      className="search-input-full"
-    />
-  </div>
-)}
+ {/* SEARCH OVERLAY */}
+<AnimatePresence>
+  {searchOpen && (
+    <motion.div 
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="search-overlay-container"
+    >
+      <div className="search-box-compact">
+        <div className="search-input-group">
+          <FaSearch className="search-icon-inner" />
+          <input
+            type="text"
+            placeholder="Search for nameplates, wallpapers..."
+            value={searchTerm}
+            autoFocus
+            onChange={(e) => fetchSuggestions(e.target.value)}
+            className="search-input-compact"
+          />
+          <FaTimes className="close-search-btn" onClick={() => setSearchOpen(false)} />
+        </div>
+
+        {/* Suggestions list */}
+        {searchTerm && (
+          <div className="search-results-dropdown">
+            {loading ? (
+              <div className="p-3 text-center text-muted">Searching...</div>
+            ) : suggestions.length > 0 ? (
+              suggestions.map((item) => (
+                <div
+                  key={item.id}
+                  className="result-card"
+                  onClick={() => {
+                    navigate(`/product/${item.id}`);
+                    setSearchOpen(false);
+                  }}
+                >
+                  <img src={item.images[0]} alt={item.name} className="result-img" />
+                  <div className="result-info">
+                    <span className="result-name">{item.name}</span>
+                    <span className="result-category">Name Plate</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-3 text-center text-muted">No products found.</div>
+            )}
+          </div>
+        )}
+      </div>
+    </motion.div>
+  )}
+</AnimatePresence>
+
 </>
   );
 };

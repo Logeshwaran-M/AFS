@@ -1,19 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { FaTrash } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import { Modal, Button } from 'react-bootstrap';
 import './Cart.css';
 
 const Cart = () => {
   const navigate = useNavigate();
   const { cartItems, removeFromCart, updateQuantity, getCartTotal, getCartCount } = useCart();
 
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewItem, setPreviewItem] = useState(null);
+
+  // ✅ New state for order note
+  const [orderNote, setOrderNote] = useState('');
+
   const handleCheckout = () => {
-    if (cartItems.length === 0) {
-      return;
-    }
-    navigate('/checkout');
+    if (cartItems.length === 0) return;
+
+    // Pass the note along with cart items to checkout page
+    navigate('/checkout', { state: { note: orderNote } });
+  };
+
+  const handleShowPreview = (item) => {
+    setPreviewItem(item);
+    setShowPreview(true);
   };
 
   if (cartItems.length === 0) {
@@ -36,27 +48,53 @@ const Cart = () => {
         <div className="cart-items">
           {cartItems.map(item => (
             <motion.div 
-              key={item.id}
+              key={item.uniqueId} 
               className="cart-item"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <img src={item.image} alt={item.name} />
+              <div className="cart-image-wrapper" style={{ position: 'relative' }}>
+                <img src={item.image} alt={item.name} />
+                <button
+                  className="preview-btn"
+                  onClick={() => handleShowPreview(item)}
+                  style={{
+                    position: 'absolute',
+                    bottom: '5px',
+                    right: '5px',
+                    background: '#000',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '4px 8px',
+                    cursor: 'pointer',
+                    borderRadius: '4px'
+                  }}
+                >
+                  Preview
+                </button>
+              </div>
+
               <div className="item-details">
                 <h3>{item.name}</h3>
                 <p className="item-price">₹ {item.price}</p>
+
+                {item.customName && <p><strong>Name:</strong> {item.customName}</p>}
+                {item.designation && <p><strong>Designation:</strong> {item.designation}</p>}
+                {item.size && <p><strong>Size:</strong> {item.size}</p>}
+
                 <div className="item-quantity">
-                  <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</button>
+                  <button onClick={() => updateQuantity(item.uniqueId, item.quantity - 1)}>-</button>
                   <span>{item.quantity}</span>
-                  <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
+                  <button onClick={() => updateQuantity(item.uniqueId, item.quantity + 1)}>+</button>
                 </div>
               </div>
+
               <div className="item-total">
                 <p>₹ {item.price * item.quantity}</p>
                 <button 
                   className="remove-btn"
-                  onClick={() => removeFromCart(item.id)}
+                  onClick={() => removeFromCart(item.uniqueId)}
                 >
                   <FaTrash />
                 </button>
@@ -75,10 +113,25 @@ const Cart = () => {
             <span>Shipping</span>
             <span>Free</span>
           </div>
+
+          {/* ✅ New Order Note Input */}
+          <div className="order-note">
+            <label htmlFor="orderNote"><strong>Note to your order:</strong></label>
+            <textarea
+              id="orderNote"
+              value={orderNote}
+              onChange={(e) => setOrderNote(e.target.value)}
+              placeholder="Add a note for your order (optional)"
+              rows={3}
+              style={{ width: '100%', padding: '8px', borderRadius: '4px', marginTop: '5px', border: '1px solid #ccc' }}
+            />
+          </div>
+
           <div className="summary-item total">
             <span>Total</span>
             <span>₹ {getCartTotal()}</span>
           </div>
+
           <button 
             className="btn-primary checkout-btn" 
             onClick={handleCheckout}
@@ -87,6 +140,53 @@ const Cart = () => {
           </button>
         </div>
       </div>
+
+      {/* Modal for Nameplate Preview */}
+      <Modal
+        show={showPreview}
+        onHide={() => setShowPreview(false)}
+        size="lg"
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Preview Nameplate</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center">
+          {previewItem && (
+            <div
+              style={{
+                position: 'relative',
+                display: 'inline-block',
+                maxWidth: '100%',
+              }}
+            >
+              <img
+                src={previewItem.image}
+                alt={previewItem.name}
+                style={{ width: '100%', borderRadius: '4px' }}
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '10%',
+                  left: '10%',
+                  color: 'white',
+                  textShadow: '2px 2px 4px black',
+                  fontSize: '1.2rem',
+                }}
+              >
+                <h4>{previewItem.customName}</h4>
+                <p>{previewItem.designation}</p>
+              </div>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowPreview(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </section>
   );
 };

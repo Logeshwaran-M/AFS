@@ -4,12 +4,18 @@ import { db } from '../firebase/config';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { pageContent } from './contentConfig'; 
 import ProductCard from '../components/ProductCard';
+import FilterComponent from './FilterComponent';
 
 const Products = () => {
   // Example URL: /products/desk/doctors
   const { category, subcategory } = useParams(); 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+  design: "",
+  material: "",
+  shape: ""
+});
 
   // Use subcategory key for content, fallback to category
 const contentKey = subcategory || category || "default";
@@ -64,7 +70,12 @@ useEffect(() => {
   fetchProducts();
 }, [category, subcategory]);
 
-
+const handleFilterChange = (type, value) => {
+  setFilters(prev => ({
+    ...prev,
+    [type]: value
+  }));
+};
 
   return (
     <div className="category-container">
@@ -75,7 +86,7 @@ useEffect(() => {
       {content?.title || "All Products"}
     </h1>
 
-    <p className="text-muted fs-5 mb-2">
+    <p className="fw-bold text-dark  fs-5 mb-2">
       {content?.subtitle || "Explore our latest collection"}
     </p>
 
@@ -88,15 +99,22 @@ useEffect(() => {
 
   </div>
 </div>
+<FilterComponent onFilterChange={handleFilterChange} />
 
-      <div className="product-grid">
+      <div className="product-grid mt-5">
         {loading ? (
           <div className="loader">Loading Designs...</div>
         ) :products
-  .filter(product => product && product.id)
-    .map(product => (
-  <ProductCard key={product.id} product={product} />
-))}
+  .filter(product => {
+    return (
+      (!filters.design || product.design === filters.design) &&
+      (!filters.material || product.material === filters.material) &&
+      (!filters.shape || product.shape === filters.shape)
+    );
+  })
+  .map(product => (
+    <ProductCard key={product.id} product={product} />
+  ))}
       </div>
     </div>
   );

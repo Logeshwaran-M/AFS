@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
+import { Row,Col } from 'react-bootstrap';
 import { 
   FaHeart, 
   FaShoppingCart, 
@@ -13,8 +14,11 @@ import {
   FaGift
 } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
+import { collection, query, limit, getDocs, orderBy } from "firebase/firestore";
+import { db } from '../firebase/config';
 import toast from 'react-hot-toast';
 import './Wishlist.css';
+import ProductCard from '../components/ProductCard';
 
 const Wishlist = () => {
   const navigate = useNavigate();
@@ -30,6 +34,7 @@ const Wishlist = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [shareModal, setShareModal] = useState(false);
   const [sortBy, setSortBy] = useState('newest');
+  const [relatedProducts, setRelatedProducts] = useState([]);
 
   // Sort items
   const sortedItems = [...wishlistItems].sort((a, b) => {
@@ -56,6 +61,34 @@ const Wishlist = () => {
         : [...prev, itemId]
     );
   };
+
+
+  useEffect(() => {
+  const fetchRelatedProducts = async () => {
+    try {
+      // Grab 4 products ordered by createdAt (latest first)
+      const productsQuery = query(
+        collection(db, "products"),
+        orderBy("createdAt", "desc"),
+        limit(4)
+      );
+
+      const snapshot = await getDocs(productsQuery);
+      const products = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      setRelatedProducts(products);
+    } catch (error) {
+      console.error("Failed to fetch related products:", error);
+    }
+  };
+
+  if (wishlistItems.length > 0) {
+    fetchRelatedProducts();
+  }
+}, [wishlistItems]);
 
   const handleSelectAll = () => {
     if (selectedItems.length === wishlistItems.length) {
@@ -239,7 +272,7 @@ const Wishlist = () => {
               </div>
 
               <div className="card-image" onClick={() => handleViewProduct(item.id)}>
-                <img src={item.image} alt={item.name} />
+                <img src={item.images[0]} alt={item.name} />
                 {item.popular && <span className="popular-badge">Popular</span>}
               </div>
 
@@ -296,22 +329,18 @@ const Wishlist = () => {
       </div>
 
       {/* Recommended Products */}
-      {wishlistItems.length > 0 && (
-        <section className="recommended-section">
-          <h2>You Might Also Like</h2>
-          <div className="recommended-grid">
-            {/* You can add recommended products here based on wishlist items */}
-            <div className="recommended-card">
-              <img src="/images/recommended-1.jpg" alt="Recommended" />
-              <h4>Similar Product</h4>
-              <p>₹999</p>
-              <button className="add-to-wishlist">
-                <FaHeart /> Add to Wishlist
-              </button>
-            </div>
-          </div>
-        </section>
-      )}
+    {wishlistItems.length > 0 && relatedProducts.length > 0 && (
+  <section className="recommended-section mt-5">
+    <h4 className="mb-3">You May Also Like</h4>
+    <Row>
+      {relatedProducts.map((p) => (
+        <Col key={p.id} xs={6} md={4} lg={3} className="mb-4">
+          <ProductCard product={p} />
+        </Col>
+      ))}
+    </Row>
+  </section>
+)}
 
       {/* Share Modal */}
       <AnimatePresence>

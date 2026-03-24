@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 
 const CartContext = createContext();
 
+// Custom hook to use CartContext
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
@@ -12,89 +13,107 @@ export const useCart = () => {
 };
 
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState([]);
-  const [orders, setOrders] = useState([]);
-
-  // Load cart from localStorage
-  useEffect(() => {
+  // Lazy load cart from localStorage
+  const [cartItems, setCartItems] = useState(() => {
     const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      setCartItems(JSON.parse(savedCart));
-    }
-    const savedOrders = localStorage.getItem('orders');
-    if (savedOrders) {
-      setOrders(JSON.parse(savedOrders));
-    }
-  }, []);
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
 
-  // Save cart to localStorage
+  const [orders, setOrders] = useState(() => {
+    const savedOrders = localStorage.getItem('orders');
+    return savedOrders ? JSON.parse(savedOrders) : [];
+  });
+
+  // Persist cart to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  // Persist orders to localStorage
+  // Persist orders to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('orders', JSON.stringify(orders));
   }, [orders]);
 
+  // Add item to cart
   const addToCart = (product) => {
-    setCartItems(prev => {
-      const existing = prev.find(item => item.id === product.id);
+    const uniqueId =
+      product.id +
+      '-' +
+      (product.customName || '') +
+      '-' +
+      (product.designation || '');
+
+    setCartItems((prev) => {
+      const existing = prev.find((item) => item.uniqueId === uniqueId);
+
       if (existing) {
-        return prev.map(item =>
-          item.id === product.id
+        // Increment quantity if same product + text combo exists
+        return prev.map((item) =>
+          item.uniqueId === uniqueId
             ? { ...item, quantity: item.quantity + (product.quantity || 1) }
             : item
         );
       }
-      return [...prev, { ...product, quantity: product.quantity || 1 }];
+
+      // Add new product if it doesn't exist
+      return [...prev, { ...product, quantity: product.quantity || 1, uniqueId }];
     });
+
+    toast.success('Added to cart ✅');
   };
 
-  const removeFromCart = (id) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
+  // Remove item from cart
+  const removeFromCart = (uniqueId) => {
+    setCartItems((prev) => prev.filter((item) => item.uniqueId !== uniqueId));
     toast.success('Removed from cart!');
   };
 
-  const updateQuantity = (id, quantity) => {
+  // Update quantity of an item
+  const updateQuantity = (uniqueId, quantity) => {
     if (quantity < 1) return;
-    setCartItems(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, quantity } : item
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item.uniqueId === uniqueId ? { ...item, quantity } : item
       )
     );
   };
 
-  const getCartTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-  };
-
-  const getCartCount = () => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0);
-  };
-
+  // Clear cart
   const clearCart = () => {
     setCartItems([]);
     toast.success('Cart cleared!');
   };
 
+  // Add order to orders history
   const addOrder = (order) => {
-    setOrders(prev => [...prev, order]);
+    setOrders((prev) => [...prev, order]);
     toast.success('Order saved to history!');
   };
 
+  // Get total price
+  const getCartTotal = () => {
+    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+  };
+
+  // Get total quantity
+  const getCartCount = () => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
+  };
+
   return (
-    <CartContext.Provider value={{
-      cartItems,
-      addToCart,
-      removeFromCart,
-      updateQuantity,
-      getCartTotal,
-      getCartCount,
-      clearCart,
-      orders,
-      addOrder
-    }}>
+    <CartContext.Provider
+      value={{
+        cartItems,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        getCartTotal,
+        getCartCount,
+        clearCart,
+        orders,
+        addOrder,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );

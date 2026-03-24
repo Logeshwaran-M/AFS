@@ -5,7 +5,7 @@ const About = () => {
   return (
     <div className="about-page">
       <div className="page-header">
-        <h1>About Housenama</h1>
+        <h1>About AFS</h1>
         <p>India's #1 Nameplate Brand Since 2011</p>
       </div>
 
@@ -13,7 +13,7 @@ const About = () => {
         <div className="about-section">
           <h2>Our Story</h2>
           <p>
-            Housenama started in 2011 with a simple mission - to help every home
+            AFS started in 2011 with a simple mission - to help every home
             and office in India have a beautiful nameplate. What began as a
             small workshop in Mumbai has now grown into India's most trusted
             nameplate brand.

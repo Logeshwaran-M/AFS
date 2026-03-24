@@ -19,7 +19,6 @@ const Reviews = () => {
   const { id } = useParams();
   const auth = getAuth();
   const user = auth.currentUser;
-
   const [reviews, setReviews] = useState([]);
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(null);
@@ -273,7 +272,7 @@ const Reviews = () => {
           <div className="d-flex justify-content-between align-items-center mb-2">
 
             <div>
-              <h6 className="fw-bold mb-0">{rev.productName || productName}</h6>
+              <h6 className="fw-bold mb-0">About - {rev.productName || productName}</h6>
               <small className="text-muted">by {rev.userName}</small>
             </div>
 

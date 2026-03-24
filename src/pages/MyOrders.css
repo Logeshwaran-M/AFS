@@ -1173,3 +1173,136 @@
     grid-column: span 1;
   }
 }
+
+
+/* OVERLAY */
+.order-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+/* MODAL */
+.modern-modal {
+  width: 90%;
+  max-width: 700px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* HEADER */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.modal-header button {
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* SUMMARY */
+.order-summary-box {
+  display: flex;
+  justify-content: space-between;
+  background: #f8f8f8;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.order-summary-box p {
+  font-size: 12px;
+  color: #666;
+}
+
+/* STATUS BADGE */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.status-badge.confirmed { background: #fff3cd; }
+.status-badge.processing { background: #cce5ff; }
+.status-badge.shipped { background: #d4edda; }
+.status-badge.delivered { background: #28a745; color: #fff; }
+.status-badge.cancelled { background: #f8d7da; }
+
+/* ITEMS */
+.modal-items h5 {
+  margin-bottom: 10px;
+}
+
+.modal-item-card {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding: 10px 0;
+}
+
+.modal-item-card img {
+  width: 70px;
+  border-radius: 8px;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-info h6 {
+  margin-bottom: 5px;
+}
+
+.qty {
+  font-size: 12px;
+  color: #666;
+}
+
+.item-price {
+  font-weight: bold;
+}
+
+/* PRICE */
+.price-section {
+  margin-top: 20px;
+  border-top: 1px solid #eee;
+  padding-top: 15px;
+}
+
+.price-section div {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.price-section .total {
+  font-size: 18px;
+}
+
+/* BUTTON */
+.modal-actions {
+  margin-top: 20px;
+  text-align: right;
+}
+
+.modal-actions .btn-dark {
+  background: black;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+}

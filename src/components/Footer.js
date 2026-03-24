@@ -17,7 +17,7 @@ const Footer = () => {
           
           {/* Workshop Address - Only Address Now */}
           <p>
-            <strong><FaMapMarkerAlt /> Workshop:</strong><br />
+            <strong> Workshop:</strong><br />
             AFS CNC & LASER<br />
             146, 7th Cross, 19th Main Rd,<br />
             opposite BMTC Bus Depot, Sector 4,<br />
